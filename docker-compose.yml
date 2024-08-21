@@ -1,0 +1,17 @@
+services:
+  mysql:
+    image: mysql:latest
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d
+      - ./mysql/mysql.cnf:/etc/mysql/conf.d/my.cnf
+    ports:
+      - "3306:3306"
+    env_file:
+      - ./mysql/conf.env
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p $$MYSQL_ROOT_PASSWORD" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
