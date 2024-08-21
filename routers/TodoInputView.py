@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSessionTransaction
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import insert 
-from ..db.models.item import Item
-from ..db import get_db
+from db.models.item import Item
+from db.db import get_db
 from pydantic import BaseModel
 
 TodoInputView_router = APIRouter()

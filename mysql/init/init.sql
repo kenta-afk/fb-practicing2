@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS items;
 
+
 CREATE TABLE items(
     item_id INT PRIMARY KEY,
     name VARCHAR(30) NOT NULL,
