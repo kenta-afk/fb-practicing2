@@ -1,36 +1,22 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
-from sqlalchemy import insert 
+from sqlalchemy import insert
 from db.models.item import Item
 from db.db import get_db
 from pydantic import BaseModel
 
 TodoInputView_router = APIRouter()
 
-
-# Pydanticモデルを使って、リクエストボディのバリデーションを行います
 class ItemCreate(BaseModel):
     name: str
     price: int
-    
-    
-    
-    
+
 @TodoInputView_router.post("/items/")
 async def create_item(item: ItemCreate, db: AsyncSession = Depends(get_db)):
-    # 新しいItemを作成
-    new_item = Item(name=item.name, price=item.price)
+    item_dict = item.model_dump()  # ここを修正
+    db_item = Item(**item_dict)
     
-    # データベースに追加
-    db.add(new_item)
+    db.add(db_item)
+    await db.commit()
     
-    # トランザクションをコミット
-    try:
-        await db.commit()
-        await db.refresh(new_item)  # データベースで更新された内容を取得
-    except Exception as e:
-        await db.rollback()
-        raise HTTPException(status_code=400, detail="データの保存に失敗しました")
-    
-    return new_item
+    return db_item
