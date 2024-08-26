@@ -6,12 +6,13 @@ let items = ref([]);
 
 onMounted(async () => {
     try {
-        const response = await axios.get("http://localhost:8000/items/");
+        const response = await axios.get("http://localhost:8000/api/TodoInputView/items/");
         items.value = response.data;
     } catch (error) {
         console.error("Failed to fetch items:", error);
     }
 });
+
 
 let inputContent = ref();
 let inputLimit = ref();
