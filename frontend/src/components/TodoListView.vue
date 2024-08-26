@@ -1,8 +1,18 @@
 <script setup>
-import { ref } from "vue";
-import { statuses } from "../const/status"
+import { ref, onMounted } from "vue";
+import axios from "axios"; // axiosを利用してAPIリクエストを送信
 
-let items = ref(JSON.parse(localStorage.getItem("items")) || []);
+let items = ref([]);
+
+onMounted(async () => {
+    try {
+        const response = await axios.get("http://localhost:8000/items/");
+        items.value = response.data;
+    } catch (error) {
+        console.error("Failed to fetch items:", error);
+    }
+});
+
 let inputContent = ref();
 let inputLimit = ref();
 let inputState = ref();
@@ -12,13 +22,12 @@ let isErrMsg = ref(false);
 let isShowModal = ref(false);
 let deleteItemId = '';
 
-
-
 function onEdit(id) {
-    inputContent.value = items.value[id].content;
-    inputLimit.value = items.value[id].limit;
-    inputState.value = items.value[id].state;
-    items.value[id].onEdit = true;
+    const item = items.value.find(item => item.id === id);
+    inputContent.value = item.content;
+    inputLimit.value = item.limit;
+    inputState.value = item.state;
+    item.onEdit = true;
 }
 
 function onUpdate(id) {
@@ -27,7 +36,7 @@ function onUpdate(id) {
         return;
     }
 
-    const newItem = {
+    const updatedItem = {
         id: id,
         content: inputContent.value,
         limit: inputLimit.value,
@@ -35,38 +44,24 @@ function onUpdate(id) {
         onEdit: false,
     };
 
-    items.value.splice(id, 1, newItem);
-
-    localStorage.setItem("items", JSON.stringify(items.value));
-
-    isErrMsg.value = false;
-}   
+    const index = items.value.findIndex(item => item.id === id);
+    items.value.splice(index, 1, updatedItem);
+}
 
 function showDeleteModal(id) {
     isShowModal.value = true;
-    deleteItemId = id
+    deleteItemId = id;
 }
 
 function onDeleteItem() {
-    items.value.splice(deleteItemId, 1);
+    const index = items.value.findIndex(item => item.id === deleteItemId);
+    items.value.splice(index, 1);
     isShowModal.value = false;
-
-    items.value = items.value.map((item, index) => ({
-        id: index,
-        content: item.content,
-        limit: item.limit,
-        state: item.state,
-        onEdit: item.onEdit,
-    }));
-
-    localStorage.setItem("items", JSON.stringify(items.value));
 }
 
 function dropDeleteModal() {
     isShowModal.value = false;
 }
-
-
 </script>
 
 <template>
@@ -84,25 +79,12 @@ function dropDeleteModal() {
             <tr v-for="item in items" :key="item.id">
                 <td>{{ item.id }}</td>
                 <td>
-                    <span v-if="!item.onEdit">{{ item.content }}</span>
+                    <span v-if="!item.onEdit">{{ item.name }}</span>
                     <input v-else v-model="inputContent" type="text" />
                 </td>
                 <td>
-                    <span v-if="!item.onEdit">{{ item.limit }}</span>
+                    <span v-if="!item.onEdit">{{ item.price }}</span>
                     <input v-else v-model="inputLimit" type="date" />
-                </td>
-                <td>
-                    <span v-if="!item.onEdit">{{ item.state.value }}</span>
-                    <select v-else v-model="inputState">
-                        <option
-                            v-for="state in statuses"
-                            :key="state.id"
-                            :value="state"
-                            :selected="state.id == item.state.id"
-                        >
-                            {{ state.value }}
-                        </option>
-                    </select>
                 </td>
                 <td>
                     <button v-if="!item.onEdit" @click="onEdit(item.id)">編集</button>
