@@ -1,31 +1,34 @@
 <script setup>
 import { ref } from "vue";
-import { statuses } from "../const/status";
+import axios from "axios";
+//import { statuses } from "../const/status";
 
 const input = ref("");
 const inputDate = ref("");
-
 const isErrMsg = ref(false);
 
-function onSubmitForm() {
-    if (input.value=="" || inputDate.value==""){
+async function onSubmitForm(event) {
+    
+    
+    if (input.value === "" || inputDate.value === "") {
+        
         isErrMsg.value = true;
         event.preventDefault();
         return;
     }
-    const items = JSON.parse(localStorage.getItem("items")) || [];
 
     const newItem = {
-        id: items.length,
-        content: input.value,
-        limit: inputDate.value,
-        state: statuses.NOT_START,
-        onEdit: false,
+        name: input.value,
+        deadline: inputDate.value, 
     };
 
-    items.push(newItem);
+    try {
+        await axios.post("http://localhost:8000/api/TodoInputView/items/", newItem);
+        console.log("Item created successfully");
+    } catch (error) {
+        console.error("Error creating item:", error);
+    }
 
-    localStorage.setItem("items", JSON.stringify(items));
 }
 </script>
 
