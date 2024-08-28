@@ -7,15 +7,15 @@ let items = ref([]);
 onMounted(async () => {
     try {
         const response = await axios.get("http://localhost:8000/api/TodoInputView/items/");
+        console.log(response.data);
         items.value = response.data;
     } catch (error) {
         console.error("Failed to fetch items:", error);
     }
 });
 
-
 let inputContent = ref();
-let inputLimit = ref();
+let inputDeadline = ref(); // limitをdeadlineに変更
 let inputState = ref();
 
 let isErrMsg = ref(false);
@@ -25,22 +25,22 @@ let deleteItemId = '';
 
 function onEdit(id) {
     const item = items.value.find(item => item.id === id);
-    inputContent.value = item.content;
-    inputLimit.value = item.limit;
+    inputContent.value = item.name;
+    inputDeadline.value = item.deadline; // limitをdeadlineに変更
     inputState.value = item.state;
     item.onEdit = true;
 }
 
 function onUpdate(id) {
-    if (inputContent.value == "" || inputLimit.value == "") {
+    if (inputContent.value == "" || inputDeadline.value == "") {
         isErrMsg.value = true;
         return;
     }
 
     const updatedItem = {
         id: id,
-        content: inputContent.value,
-        limit: inputLimit.value,
+        name: inputContent.value,
+        deadline: inputDeadline.value, 
         state: inputState.value,
         onEdit: false,
     };
@@ -73,19 +73,18 @@ function dropDeleteModal() {
                 <th class="th-id">ID</th>
                 <th class="th-value">やること</th>
                 <th class="th-limit">期限</th>
-                <th class="th-state">状態</th>
                 <th class="th-edit">編集</th>
                 <th class="th-delete">削除</th>
             </tr>
             <tr v-for="item in items" :key="item.id">
                 <td>{{ item.id }}</td>
                 <td>
-                    <span v-if="!item.onEdit">{{ item.name }}</span>
+                    <span v-if="!item.onEdit">{{ item.name }}</span> <!-- nameを表示 -->
                     <input v-else v-model="inputContent" type="text" />
                 </td>
                 <td>
-                    <span v-if="!item.onEdit">{{ item.price }}</span>
-                    <input v-else v-model="inputLimit" type="date" />
+                    <span v-if="!item.onEdit">{{ item.deadline }}</span> <!-- 期限を表示 -->
+                    <input v-else v-model="inputDeadline" type="date" />
                 </td>
                 <td>
                     <button v-if="!item.onEdit" @click="onEdit(item.id)">編集</button>
