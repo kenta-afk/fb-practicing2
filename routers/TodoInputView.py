@@ -7,12 +7,13 @@ from db.db import get_db
 from pydantic import BaseModel
 from sqlalchemy.engine.result import Result
 from sqlalchemy.future import select
+from datetime import date
 
 TodoInputView_router = APIRouter()
 
 class ItemCreate(BaseModel):
     name: str
-    price: int
+    deadline: date
 
 @TodoInputView_router.post("/items/")
 async def create_item(item: ItemCreate, db: AsyncSession = Depends(get_db)):
