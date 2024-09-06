@@ -76,7 +76,7 @@ function dropDeleteModal() {
                 <th class="th-edit">編集</th>
                 <th class="th-delete">削除</th>
             </tr>
-            <tr v-for="item in items" :key="item.id">
+            <tr v-for="(item, index) in items" :key="item.id">
                 <td>{{ item.id }}</td>
                 <td>
                     <span v-if="!item.onEdit">{{ item.name }}</span> <!-- nameを表示 -->
