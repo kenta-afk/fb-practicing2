@@ -11,7 +11,7 @@ async function onSubmitForm(event) {
     event.preventDefault();
     
     if (input.value === "" || inputDate.value === "") {
-        
+        event.preventDefault();
         isErrMsg.value = true;
         
         return;
@@ -28,6 +28,7 @@ async function onSubmitForm(event) {
     } catch (error) {
         console.error("Error creating item:", error);
     }
+    location.reload();
 
 }
 </script>
