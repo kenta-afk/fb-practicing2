@@ -8,14 +8,14 @@ const inputDate = ref("");
 const isErrMsg = ref(false);
 
 async function onSubmitForm(event) {
+    event.preventDefault();
     
-    
-    /*if (input.value === "" || inputDate.value === "") {
+    if (input.value === "" || inputDate.value === "") {
         
         isErrMsg.value = true;
-        event.preventDefault();
+        
         return;
-    }*/
+    }
 
     const newItem = {
         name: input.value,
