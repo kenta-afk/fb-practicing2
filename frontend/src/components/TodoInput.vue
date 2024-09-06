@@ -10,12 +10,12 @@ const isErrMsg = ref(false);
 async function onSubmitForm(event) {
     
     
-    if (input.value === "" || inputDate.value === "") {
+    /*if (input.value === "" || inputDate.value === "") {
         
         isErrMsg.value = true;
         event.preventDefault();
         return;
-    }
+    }*/
 
     const newItem = {
         name: input.value,
@@ -23,7 +23,7 @@ async function onSubmitForm(event) {
     };
 
     try {
-        await axios.post("http://localhost:8000/api/TodoInputView/items/", newItem);
+        await axios.post("http://localhost:8000/api/TodoInputView/items/",  newItem );
         console.log("Item created successfully");
     } catch (error) {
         console.error("Error creating item:", error);
