@@ -30,4 +30,20 @@ async def get_items(db: AsyncSession = Depends(get_db)):
     result: Result = await db.execute(select(Item))
     items = result.scalars().all()
     return items
+
+@TodoInputView_router.delete("/items/{item_id}")
+async def delete_item(item_id: int, db: AsyncSession = Depends(get_db)):
+    # アイテムをデータベースから取得
+    result = await db.execute(select(Item).where(Item.item_id == item_id))
+    item = result.scalar_one_or_none()
+
+    # アイテムが存在しない場合、404エラーを返す
+    if item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+
+    # アイテムを削除
+    await db.delete(item)
+    await db.commit()
+    
+    return {"message": "Item deleted"}
     
