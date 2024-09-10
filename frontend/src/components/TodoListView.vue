@@ -24,9 +24,9 @@ let isShowModal = ref(false);
 let deleteItemId = '';
 
 function onEdit(id) {
-    const item = items.value.find(item => item.id === id);
+    const item = items.value.find(item => item.item_id === id);
     inputContent.value = item.name;
-    inputDeadline.value = item.deadline; // limitをdeadlineに変更
+    inputDeadline.value = item.deadline;
     inputState.value = item.state;
     item.onEdit = true;
 }
@@ -38,26 +38,39 @@ function onUpdate(id) {
     }
 
     const updatedItem = {
-        id: id,
+        item_id: id,
         name: inputContent.value,
         deadline: inputDeadline.value, 
         state: inputState.value,
         onEdit: false,
     };
 
-    const index = items.value.findIndex(item => item.id === id);
+    const index = items.value.findIndex(item => item.item_id === id);
     items.value.splice(index, 1, updatedItem);
 }
 
 function showDeleteModal(id) {
+    console.log(id);
     isShowModal.value = true;
     deleteItemId = id;
 }
 
-function onDeleteItem() {
-    const index = items.value.findIndex(item => item.id === deleteItemId);
-    items.value.splice(index, 1);
-    isShowModal.value = false;
+
+async function onDeleteItem() {
+    try {
+        // DELETEリクエストを送信してデータを削除
+        await axios.delete(`http://localhost:8000/api/TodoInputView/items/${deleteItemId}`);
+        
+        // ローカルのitemsから削除
+        const index = items.value.findIndex(item => item.id === deleteItemId);
+        items.value.splice(index, 1);
+        isShowModal.value = false;
+
+        console.log("Item deleted successfully");
+    } catch (error) {
+        console.error("Failed to delete item:", error);
+    }
+    location.reload();
 }
 
 function dropDeleteModal() {
@@ -76,8 +89,8 @@ function dropDeleteModal() {
                 <th class="th-edit">編集</th>
                 <th class="th-delete">削除</th>
             </tr>
-            <tr v-for="(item, index) in items" :key="item.id">
-                <td>{{ item.id }}</td>
+            <tr v-for="(item, index) in items" :key="item.item_id">
+                <td>{{ item.item_id }}</td>
                 <td>
                     <span v-if="!item.onEdit">{{ item.name }}</span> <!-- nameを表示 -->
                     <input v-else v-model="inputContent" type="text" />
@@ -88,9 +101,9 @@ function dropDeleteModal() {
                 </td>
                 <td>
                     <button v-if="!item.onEdit" @click="onEdit(item.id)">編集</button>
-                    <button v-else @click="onUpdate(item.id)">完了</button>
+                    <button v-else @click="onUpdate(item.item_id)">完了</button>
                 </td>
-                <td><button @click="showDeleteModal(item.id)">削除</button></td>
+                <td><button @click="showDeleteModal(item.item_id)">削除</button></td>
             </tr>
         </table>
     </div>
