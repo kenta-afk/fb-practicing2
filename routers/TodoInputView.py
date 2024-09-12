@@ -14,6 +14,10 @@ TodoInputView_router = APIRouter()
 class ItemCreate(BaseModel):
     name: str
     deadline: date
+    
+class ItemUpdate(BaseModel):
+    name: str
+    deadline: date
 
 @TodoInputView_router.post("/items/")
 async def create_item(item: ItemCreate, db: AsyncSession = Depends(get_db)):
@@ -30,6 +34,25 @@ async def get_items(db: AsyncSession = Depends(get_db)):
     result: Result = await db.execute(select(Item))
     items = result.scalars().all()
     return items
+
+
+
+@TodoInputView_router.put("/items/{item_id}")
+async def replace_item(item_id: int, item_data: ItemUpdate, db: AsyncSession = Depends(get_db)):
+    #データベースからのデータ取得
+    result = await db.execute(select(Item).where(Item.item_id == item_id))
+    db_item = result.scalar_one_or_none()
+    
+    if db_item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    
+    db_item.name = item_data.name
+    db_item.deadline = item_data.deadline
+    
+    await db.commit()
+    
+    return db_item
+
 
 @TodoInputView_router.delete("/items/{item_id}")
 async def delete_item(item_id: int, db: AsyncSession = Depends(get_db)):

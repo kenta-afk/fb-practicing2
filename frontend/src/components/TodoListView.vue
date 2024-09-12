@@ -15,38 +15,51 @@ onMounted(async () => {
 });
 
 let inputContent = ref();
-let inputDeadline = ref(); // limitをdeadlineに変更
-let inputState = ref();
+let inputDeadline = ref(); 
+
 
 let isErrMsg = ref(false);
 
 let isShowModal = ref(false);
 let deleteItemId = '';
+let updateItemId = '';
 
 function onEdit(id) {
     const item = items.value.find(item => item.item_id === id);
-    inputContent.value = item.name;
-    inputDeadline.value = item.deadline;
-    inputState.value = item.state;
-    item.onEdit = true;
+
+    if (item) {
+        inputContent.value = item.name;
+        inputDeadline.value = item.deadline;
+        item.onEdit = true;
+        updateItemId = id;  // 更新対象のIDを保存
+    }
 }
 
-function onUpdate(id) {
+async function onUpdate(id) {
     if (inputContent.value == "" || inputDeadline.value == "") {
         isErrMsg.value = true;
         return;
     }
 
-    const updatedItem = {
-        item_id: id,
-        name: inputContent.value,
-        deadline: inputDeadline.value, 
-        state: inputState.value,
-        onEdit: false,
-    };
+    // 更新リクエストを送信
+    try {
+        const updatedItem = {
+            name: inputContent.value,
+            deadline: inputDeadline.value,
+        };
 
-    const index = items.value.findIndex(item => item.item_id === id);
-    items.value.splice(index, 1, updatedItem);
+        await axios.put(`http://localhost:8000/api/TodoInputView/items/${id}`, updatedItem);
+        
+        // ローカルのitemsを更新
+        const index = items.value.findIndex(item => item.item_id === id);
+        items.value[index].name = updatedItem.name;
+        items.value[index].deadline = updatedItem.deadline;
+        items.value[index].onEdit = false;
+
+        console.log("Item updated successfully");
+    } catch (error) {
+        console.error("Failed to update item:", error);
+    }
 }
 
 function showDeleteModal(id) {
@@ -55,14 +68,13 @@ function showDeleteModal(id) {
     deleteItemId = id;
 }
 
-
 async function onDeleteItem() {
     try {
         // DELETEリクエストを送信してデータを削除
         await axios.delete(`http://localhost:8000/api/TodoInputView/items/${deleteItemId}`);
         
         // ローカルのitemsから削除
-        const index = items.value.findIndex(item => item.id === deleteItemId);
+        const index = items.value.findIndex(item => item.item_id === deleteItemId);
         items.value.splice(index, 1);
         isShowModal.value = false;
 
@@ -70,7 +82,7 @@ async function onDeleteItem() {
     } catch (error) {
         console.error("Failed to delete item:", error);
     }
-    location.reload();
+    
 }
 
 function dropDeleteModal() {
@@ -100,7 +112,7 @@ function dropDeleteModal() {
                     <input v-else v-model="inputDeadline" type="date" />
                 </td>
                 <td>
-                    <button v-if="!item.onEdit" @click="onEdit(item.id)">編集</button>
+                    <button v-if="!item.onEdit" @click="onEdit(item.item_id)">編集</button>
                     <button v-else @click="onUpdate(item.item_id)">完了</button>
                 </td>
                 <td><button @click="showDeleteModal(item.item_id)">削除</button></td>
